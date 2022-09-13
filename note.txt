@@ -1,0 +1,20 @@
+1. Project setup:
+    i.  create project:
+            > django-admin startproject My_Social_Project
+    ii. create virtual enviroment in CMD:
+            python -m venv env
+            env\Scripts\activate
+    iii. create & install requirements.txt:
+            Django==3.0.2
+
+            > pip install -r requirements.txt
+
+    iv. create app App_Login:
+            > py manage.py startapp App_Login
+    
+    v. add app in settings.py:
+    vi. create filder: templates, media, static
+        and add them in settings.py:
+
+
+ 2. Login System:       
