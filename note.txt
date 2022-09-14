@@ -255,11 +255,12 @@ we can run server:
                 registered = False
                 if request.method == 'POST':
                         form = CreateNewUser(data=request.POST)
-                        if form.is_valid():
-                        user = form.save()
-                        registered = True
-->                      user_profile = UserProfile(user=user)
-                        pass
+                                if form.is_valid():
+                                user = form.save()
+                                registered = True
+        ->                      user_profile = UserProfile(user=user)
+                                user_profile.save()
+                                pass
 
                 return render(request, 'App_Login/signup.html', context={'title': 'Sign up . Instagram', 'form': form})
 
@@ -380,7 +381,174 @@ we can run server:
 
         @login_required
         def edit_profile(request):
-        pass
+            return render(request, 'App_Login/profile.html', context={})
+
+
+        vi. urls.py:
+            path('edit/', views.edit_profile, name="edit"),
+
+
+        vii. models.py: blank=Ture korbo
+                profile_pic = models.ImageField(upload_to='profile_pics', blank=True)
+                dob = models.DateField(blank=True, null=True)
+                website = models.URLField(blank=True)
+                facebook = models.URLField(blank=True)
+
+
+        // now create its form:
+        viii. forms.py:
+                from App_Login.models import UserProfile
+
+                        class EditProfile(forms.ModelForm):
+                                class Meta:
+                                        model = UserProfile
+                                        fields = "__all__"
+
+        ix. views.py:
+                @login_required
+                def edit_profile(request):
+                form = EditProfile(instance=request.user)
+                
+                return render(request, 'App_Login/profile.html', context={'form': form})
+
+        x. admin.py:
+                from .models import UserProfile
+
+                # Register your models here.
+                admin.site.register(UserProfile)
+
+        xi. views.py:
+        @login_required
+        def edit_profile(request):
+                current_user = UserProfile.objects.get(user=request.user)
+                form = EditProfile(instance=current_user)
+
+                return render(request, 'App_Login/profile.html', context={'form': form, 'title':'Edit Profile . Social'})
+
+
+        xii. profile.html:
+                {% block title_block %}{{title}}{% endblock %}
+                {% block css_block %}
+
+                {% endblock %}
+                {% block body_block%}
+                <form method="POST" enctype="multipart/form-data">
+                        {{form|crispy}}
+                        {% csrf_token %}
+                        <button type="submit" name="button" class="btn btn-primary">Submit</button>
+                </form>
+                {% endblock %}
+
+
+        xiii. views.py:
+                @login_required
+                def edit_profile(request):
+                current_user = UserProfile.objects.get(user=request.user)
+                form = EditProfile(instance=current_user)
+                if request.method == 'POST':
+                        form = EditProfile(request.POST, request.FILES, instance=current_user)
+                        if form.is_valid():
+                        form.save(commit=True)
+                        form = EditProfile(instance=current_user)
+
+                return render(request, 'App_Login/profile.html', context={'form': form, 'title': 'Edit Profile . Social'})
+        
+
+        Xiv: forms.py:
+                class EditProfile(forms.ModelForm):
+                        dob = forms.DateField(widget=forms.TextInput(attrs={'type': 'date',}))
+
+                        class Meta:
+                                model = UserProfile
+                                exclude = ('user', )
+
+6. show social site post:
+        i. > py manage.py startapp App_Posts
+
+        ii. include App_Posts in settings.py:
+
+
+        iii. create App_Posts\urls.py:
+
+        iv. main project urls.py:
+                path('post/', include('App_Posts.urls')),
+
+        v. write view in App_Posts\views.py:
+                from django.shortcuts import HttpResponse
+
+                # Create your views here.
+
+                def home(request):
+                return HttpResponse("Homepage")
+
+        vi. urls.py:
+                from django.urls import path
+                from App_Posts import views
+
+                app_name = 'App_Posts'
+
+                urlpatterns = [
+                        path("", views.home, name='home'),
+
+                ]
+
+        v. navbar.html:
+                <a class="nav-link" href="{% url 'App_Posts:home' %}">Home</a>
+
+
+        vi. main urls.py:
+                from App_Posts import views
+                path('', views.home, name='home'),
+
+        vii. views.py:
+                from django.contrib.auth.decorators import login_required
+                # Create your views here.
+
+
+                @login_required
+                def home(request):
+                        return HttpResponse("Homepage")
+
+
+        viii. create folder App_Posts and file home.html:
+                {% extends 'navbar.html' %}
+                {% block title_block %} {% endblock %}
+
+                {% block body_block %}
+                <h1>Homepage</h1>
+
+                {% endblock %}
+
+        ix. view.py:
+                @login_required
+                def home(request):
+                        return render(request, 'App_Posts/home.html', context={'title': 'Home'})
+                                
+
+
+7. create logout view:
+        i. App_Login/views.py:
+                @login_required
+                def logout_user(request):
+                        logout(request)
+                        return HttpResponseRedirect(reverse('App_Login:login'))
+
+
+        ii. urls.py:
+                path('logout/', views.logout_user, name='logout'),
+
+
+
+        ii. navbar.html:
+                <a class="nav-link" href="{% url 'App_Login:logout' %}">Logout</a>
+
+8. after login:
+        App_Login\views.py:
+                return HttpResponseRedirect(reverse('App_Posts:home'))
+
+
+// now signup and sign in,
+        then it redirect to Homepage
 
 
 
