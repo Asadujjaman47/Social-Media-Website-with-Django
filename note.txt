@@ -729,3 +729,72 @@ we can run server:
 
         xii. user.html:
                 <h6>{{user.user_profile.description|linebreaks}}</h6>
+
+
+12. form create for post:
+        i. create App_Posts\forms.py:
+        
+                from django import forms
+                from App_Posts.models import Post
+
+
+                class PostForm(forms.ModelForm):
+
+                class Meta:
+                        model = Post
+                        fields = ['image', 'caption',]
+
+
+        ii. App_Login\views.py:
+
+                @login_required
+                def profile(request):
+                form = PostForm()
+                if request.method == 'POST':
+                        form = PostForm(request.POST, request.FILES)
+                        if form.is_valid():
+                        post = form.save(commit=False)
+                        post.author = request.user
+                        post.save()
+                        return HttpResponseRedirect(reverse('home'))
+
+
+                return render(request, 'App_Login/user.html', context={'title': 'User', 'form': form})
+
+
+// now display this form in user.html:
+// here we use Modal:
+        iii. user.html:
+                <!-- Button to Open the Modal -->
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                New Post
+                </button>
+
+                <!-- The Modal -->
+                <div class="modal" id="myModal">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                        <h4 class="modal-title">Post a Photo</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                        <form method="POST" enctype="multipart/form-data">
+                                {{form.as_p}}
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Post</button>
+                        </form>
+                        </div>
+                
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                        </div>
+                
+                </div>
+                </div>
+                </div>
