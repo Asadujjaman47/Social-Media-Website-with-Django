@@ -798,3 +798,37 @@ we can run server:
                 </div>
                 </div>
                 </div>
+
+
+
+13. user upload image(show in his profile):
+        i. user.html:
+                <br>
+                <div class="row">
+                {% for post in user.post.all %}
+                        <div class="crop">
+                                <img src="/media/{{post.image}}" title="{{post.caption}}">
+                        </div>
+                {% endfor %}
+
+                </div>
+
+        <style>
+        .crop {
+        width: 200px;
+        height: 200px;
+        overflow: hidden;
+        }
+
+        .crop img{
+        width: 400px;
+        height: 300px;
+        margin: -75px 0 0 -100px;
+        }
+        </style>
+
+        {% endblock %}
+
+
+
+
