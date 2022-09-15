@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 
 from App_Posts.forms import PostForm
 
+from django.contrib.auth.models import User
 # Create your views here.
 
 
@@ -76,3 +77,12 @@ def profile(request):
             return HttpResponseRedirect(reverse('home'))
 
     return render(request, 'App_Login/user.html', context={'title': 'User', 'form': form})
+
+
+@login_required
+def user(request, username):
+    user_other = User.objects.get(username=username)
+    if user_other == request.user:
+        return HttpResponseRedirect(reverse('App_Login:profile'))
+
+    return render(request, 'App_Login/user_others.html', context={'user_other': user_other})

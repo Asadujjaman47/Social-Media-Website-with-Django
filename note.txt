@@ -831,4 +831,161 @@ we can run server:
 
 
 
+14. add search bar in navbar:
+        i. navbar.html:
+        // add in navbar:
+                &nbsp; &nbsp; &nbsp;
+                        <form class="form-inline" method="GET">
+                        <input class="form-control mr-sm-2" type="text" name="search" placeholder="Search">
+                        <button class="btn btn-success" type="submit">Search</button>
+                </form>
+
+        ii. App_Posts/ views.py:
+        def home(request):
+                if request.method == 'GET':
+                        search = request.GET.get('search')
+
+                return render(request, 'App_Posts/home.html', context={'title': 'Home', 'search': search})
+
+        // test search:
+        iii. home.html:
+                {% block body_block %}
+                        {% if search %}
+                                {{search}}
+                {% else %}
+
+                {% endif %}
+
+                {% endblock %}
+
+
+        iv. views.py:
+                def home(request):
+                        if request.method == 'GET':
+                                search = request.GET.get('search')
+                                result = User.objects.filter(username=search)
+
+                        return render(request, 'App_Posts/home.html', context={'title': 'Home', 'search': search, 'result': result})
+
+
+        v. home.html:
+                {% if search %}
+                {% for user in result %}
+                        {{user.username}}
+                {% endfor %}
+
+
+// now if search partial match:
+        vi. views.py:
+        @login_required
+        def home(request):
+                if request.method == 'GET':
+                        search = request.GET.get('search', '')
+                        result = User.objects.filter(username__icontains=search)
+
+                return render(request, 'App_Posts/home.html', context={'title': 'Home', 'search': search, 'result': result})
+
+
+
+        vii. home.html:
+                {% block body_block %}
+                {% if search %}
+                {% for user in result %}
+                <div class="row">
+                        <div class="col-sm-2">
+                        {% if user.user_profile.profile_pic %}
+                                <img src="/media/{{user.user_profile.profile_pic}}" width="75px" height="75px" class="rounded-circle">
+                        
+                        {% else %}
+                                <img src="/media/default.png" width="75px" height="75px" class="rounded-circle">
+                        
+                        {% endif %}
+                        </div>
+                        <div class="col-sm-10">
+                        
+                        <a href="{% url 'App_Login:user' username=user.username %}">{{user.username}}</a>
+                        <br>
+                        {{user.user_profile.full_name}}
+                        </div>
+                </div>
+                        
+                {% endfor %}
+                
+                {% else %}
+
+                {% endif %}
+
+                {% endblock %}
+
+
+        viii. App_Login/urls.py:
+            path('user/<username>/', views.user, name='user'),
+
+        ix. App_Login/views.py:
+                @login_required
+                def user(request, username):
+                        user_other = User.objects.get(username=username)
+                        if user_other == request.user:
+                                return HttpResponseRedirect(reverse('App_Login:profile'))
+
+                        return render(request, 'App_Login/user_others.html', context={'user_other': user_other})
+
+
+        x. create templates\App_Login\user_others.html:
+                {% extends 'navbar.html' %}
+                {% block title_block %} {{user_other.user_profile.full_name}} (@{{user_other.username}}) {% endblock %}
+                {% block css_block %}
+                <style>
+                .crop {
+                width: 200px;
+                height: 200px;
+                overflow: hidden;
+                }
+
+                .crop img{
+                width: 400px;
+                height: 300px;
+                margin: -75px 0 0 -100px;
+                }
+                </style>
+                {% endblock %}
+
+                {% block body_block %}
+                <div class="row">
+                <div class="col-sm-4">
+                        {% if user_other.user_profile.profile_pic %}
+                        <img src="/media/{{user_other.user_profile.profile_pic}}" width="250px" height="250px" class="rounded-circle">
+                        
+                        {% else %}
+                        <img src="/media/default.png" width="250px" height="250px" class="rounded-circle">
+                        
+                        {% endif %}
+                </div>
+                <div class="col-sm-8">
+                        <h1>{{user_other.username}} &nbsp; </h1>
+                        <br>
+                        <h4>{{user_other.post.count}} posts &nbsp; &nbsp; {{user_other.following.count}} followers &nbsp; &nbsp; {{user_other.follower.count}} following</h4>
+                        <br>
+                        <h3>{{user_other.user_profile.full_name}}</h3>
+                        <p>{{user_other.user_profile.description|linebreaks}}</p>
+                </div>
+                </div>
+                <hr>
+                <br>
+                <br>
+                <div class="row">
+                {% for post in user_other.post.all %}
+                <div class="crop">
+                <img src="/media/{{post.image}}" title="{{post.caption}}">
+                </div>
+                {% endfor %}
+
+                </div>
+
+                {% endblock %}
+
+
+
+
+
 

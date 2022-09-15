@@ -9,9 +9,14 @@
   }
 
   .crop img{
-    width: 400px;
+    {% comment %} width: 400px;
     height: 300px;
-    margin: -75px 0 0 -100px;
+    margin: -75px 0 0 -100px; {% endcomment %}
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding: 10px;
   }
 </style>
 
@@ -30,12 +35,12 @@
         {% endif %}
     </div>
     <div class="col-sm-8">
-        <h3>{{user.username}} &nbsp; <a href="{% url 'App_Login:edit' %}" class="btn btn-dark">Edit Profile</a></h3>
+        <h1>{{user.username}} &nbsp; <a href="{% url 'App_Login:edit' %}" class="btn btn-dark">Edit Profile</a></h1>
         <br>
         <h4>{{user.post.count}} posts &nbsp; &nbsp; {{user.following.count}} followers &nbsp; &nbsp; {{user.follower.count}} following</h4>
         <br>
-        <h4>{{user.user_profile.full_name}}</h4>
-        <h6>{{user.user_profile.description|linebreaks}}</h6>
+        <h3>{{user.user_profile.full_name}}</h3>
+        <p>{{user.user_profile.description|linebreaks}}</p>
     </div>
 </div>
 <hr>
