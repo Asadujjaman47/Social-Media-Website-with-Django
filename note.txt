@@ -1175,5 +1175,77 @@ we can run server:
 
 
 
+17. like/unlike function add:
+        i. App_Posts/views:
+
+        @login_required
+        def liked(request, pk):
+        post = Post.objects.get(pk=pk)
+        already_liked = Like.objects.filter(post=post, user=request.user)
+        if not already_liked:
+                liked_post = Like(post=post, user=request.user)
+                liked_post.save()
+
+        return HttpResponseRedirect(reverse('home'))
+
+
+        @login_required
+        def unliked(request, pk):
+        post = Post.objects.get(pk=pk)
+        already_liked = Like.objects.filter(post=post, user=request.user)
+        already_liked.delete()
+
+        return HttpResponseRedirect(reverse('home'))
+
+
+        ii. add fontawesome:
+        home.html:
+                <div style="padding:20px">
+                        <i class="fas fa-heart" style="font-size:36px"></i>
+                        <i class="far fa-heart" style="font-size:36px"></i>
+                </div>
+        
+
+        iii. views.py:
+        @login_required
+        def home(request):
+                following_list = Follow.objects.filter(follower=request.user)
+                posts = Post.objects.filter(
+                        author__in=following_list.values_list('following'))
+                liked_post = Like.objects.filter(user=request.user)
+                liked_post_list = liked_post.values_list('post', flat=True)
+
+                if request.method == 'GET':
+                        search = request.GET.get('search', '')
+                        result = User.objects.filter(username__icontains=search)
+
+                return render(request, 'App_Posts/home.html', context={'title': 'Home', 'search': search, 'result': result, 'posts': posts, 'liked_post_list': liked_post_list})
+        
+
+        iv. App_Posts\urls.py:
+                path('liked/<pk>', views.liked, name='liked'),
+                path('unliked/<pk>', views.unliked, name='unliked'),
+
+
+        v. home.html:
+        <div style="padding:20px">
+                {{ post.caption }} <br>
+                {{ post.liked_post.count }} Likes <br>
+
+                {% if post.pk in liked_post_list %}
+                        <a href="{% url 'App_Posts:unliked' pk=post.pk %}">
+                            <i class="fas fa-heart" style="font-size:36px"></i>
+                        </a>
+
+                {% else %}
+                        <a href="{% url 'App_Posts:liked' pk=post.pk %}">
+
+                            <i class="far fa-heart" style="font-size:36px"></i>
+                        </a>
+                {% endif %}
+        </div>
+
+
+
 
 
