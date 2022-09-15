@@ -986,6 +986,58 @@ we can run server:
 
 
 
+15. follow option:
+        i. App_Login\views.py:
+                @login_required
+                def follow(request, username):
+                following_user = User.objects.get(username=username)
+                follower_user = request.user
+                already_followed = Follow.objects.filter(
+                        follower=follower_user, following=following_user)
+                if not already_followed:
+                        followed_user = Follow(follower=follower_user,
+                                        following=following_user)
+                        followed_user.save()
+
+                return HttpResponseRedirect(reverse('App_Login:user', kwargs={'username': username}))
 
 
+                @login_required
+                def unfollow(request, username):
+                following_user = User.objects.get(username=username)
+                follower_user = request.user
+                already_followed = Follow.objects.filter(
+                        follower=follower_user, following=following_user)
+                already_followed.delete()
 
+                return HttpResponseRedirect(reverse('App_Login:user', kwargs={'username': username}))
+
+        ii. App_Login\urls.py:
+                
+                path('follow/<username>/', views.follow, name='follow'),
+                path('unfollow/<username>/', views.unfollow, name='unfollow'),
+
+        iii. user_others.html:
+        <h1>{{user_other.username}} &nbsp; <a href="{% url 'App_Login:follow' username=user_other.username %}" class="btn btn-primary">Follow</a> </h1>
+
+        iv. App_Login\views.py > user:
+
+        @login_required
+        def user(request, username):
+                user_other = User.objects.get(username=username)
+                already_followed = Follow.objects.filter(
+                        follower=request.user, following=user_other)
+                if user_other == request.user:
+                        return HttpResponseRedirect(reverse('App_Login:profile'))
+
+                return render(request, 'App_Login/user_others.html', context={'user_other': user_other, 'already_followed': already_followed})
+
+
+        v. user_other.html:
+                <h1>{{user_other.username}} &nbsp; 
+                        {% if not already_followed %}
+                                <a href="{% url 'App_Login:follow' username=user_other.username %}" class="btn btn-primary">Follow</a> </h1>
+                        {% else %}
+                                <a href="{% url 'App_Login:unfollow' username=user_other.username %}" class="btn btn-primary">Unfollow</a> 
+                        {% endif %}
+                </h1>
